@@ -124,7 +124,7 @@
         },
 
 
-        // VPN section - color controlled by wrapper script
+        // VPN section with green color theme
         {
             "type": "custom",
             "key": "│{#green}┌──────────────┬───{$5}┐{#keys}│\u001b[34D",
