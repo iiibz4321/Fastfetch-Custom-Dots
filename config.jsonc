@@ -1,0 +1,184 @@
+// Based on #1576
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "small",        // Logo type: auto, builtin, small, file, etc.
+    "source": "ubuntu",      // Built-in logo name or file path
+    "width": 10,           // Width in characters
+    "height": 10,          // Height in characters
+    "padding": {
+        "top": 5,          // Top padding
+        "left": 4,         // Left padding
+        "right": 2,         // Right padding
+    },
+    "color": {             // Override logo colors
+        "1": "blue",
+        "2": "blue"
+    }
+  },
+    "display": {
+        "color": {
+            "keys": "blue"
+        },
+        "separator": "",
+        // Constants are reusable strings referenced by {$1}, {$2}, etc.
+        // These contain ANSI escape codes for cursor positioning
+        "constants": [
+            "──────────────────────────────────────────────", // {$1} - horizontal line for borders 
+            "\u001b[47D",                                     // {$2} - move cursor left 47 columns
+            "\u001b[47C",                                     // {$3} - move cursor right 47 columns
+            "\u001b[46C",                                     // {$4} - move cursor right 46 columns
+            "───────────────────────────────────────────",    // {$5} - horizontal line for borders (-3)
+      
+        ],
+        "brightColor": false
+    },
+    "modules": [
+        {
+            "type": "version",
+            "key": "┌─────────────────{$1}┐\u001b[41D",
+            "format": "\u001b[1m{#keys} {1} - {2} "
+        },
+        // Hardware section with magenta color theme
+        {
+            "type": "custom",
+            "key": "│{#magenta}┌──────────────┬{$1}┐{#keys}│\u001b[37D",
+            "format": "{#magenta} Hardware "
+        },
+        {
+            "type": "host",
+            // Similar structure but with cyan color formatting:
+            // │{#cyan}│             - Left border with cyan color
+            //  {icon}               - Chassis icon
+            //  Chassis             - Fixed label text
+            // │{$4}│{#keys}│{$2}    - Positioning and borders for value area
+            "key": "│{#magenta}│ \udb80\udf22  Machine   │{$4}│{#keys}│{$2}",
+            "format": "{1}"
+        },
+        {
+            "type": "display",
+            "key": "│{#magenta}│ {icon}  Display   │{$4}│{#keys}│{$2}",
+            "format": "{1} x {2} @ {3} Hz"
+        },        
+        {
+            "type": "cpu",
+            "key": "│{#magenta}│ {icon}  CPU       │{$4}│{#keys}│{$2}",
+            "format": "{1} @ {7}"
+        },
+        {
+            "type": "gpu",
+            "key": "│{#magenta}│ {icon}  GPU       │{$4}│{#keys}│{$2}",
+            "format": "{name:15}" // Left-align GPU name within 15 characters
+        },
+        {
+            "type": "memory",
+            "key": "│{#magenta}│ {icon}  RAM       │{$4}│{#keys}│{$2}",
+            "format": "{used} / {total} [{percentage}]"
+        },
+        {
+            "type": "disk",
+            "key": "│{#magenta}│ {icon}  SSD       │{$4}│{#keys}│{$2}",
+        "format": "{size-used} / {size-total} [{size-percentage}]"
+        },
+        {
+            "type": "battery",
+            "key": "│{#magenta}│ {icon}  Battery   │{$4}│{#keys}│{$2}"
+        },
+        {
+            "type": "custom",
+            "key": "│{#magenta}└──────────────┴{$1}┘{#keys}│",
+            "format": ""
+        },
+
+        // Software section with yellow color theme
+        {
+            "type": "custom",
+            "key": "│{#yellow}┌──────────────┬{$1}┐{#keys}│\u001b[37D",
+            "format": "{#yellow} Software "
+        },
+        {
+            "type": "os",
+            "key": "│{#yellow}│ \uf31b  OS        │{$4}│{#keys}│{$2}"
+        },
+        {
+            "type": "kernel",
+            "key": "│{#yellow}│ {icon}  Kernel    │{$4}│{#keys}│{$2}",
+            "format": "{2}" 
+        },
+        {
+            "type": "shell",
+            "key": "│{#yellow}│ {icon}  Shell     │{$4}│{#keys}│{$2}"
+        },
+        {
+            "type": "de",
+            "key": "│{#yellow}│ {icon}  DE        │{$4}│{#keys}│{$2}"
+        },
+        {
+            "type": "wm",
+            "key": "│{#yellow}│ {icon}  WM        │{$4}│{#keys}│{$2}"
+        },
+        {
+            "type": "custom",
+            "key": "│{#yellow}└──────────────┴{$1}┘{#keys}│",
+            "format": ""
+        },
+
+
+        // VPN section - color controlled by wrapper script
+        {
+            "type": "custom",
+            "key": "│{#green}┌──────────────┬───{$5}┐{#keys}│\u001b[34D",
+            "format": "{#green} VPN "
+        },
+        {
+            "type": "command",
+            "key": "│{#green}│ \udb80\udc02  Status    │{$4}│{#keys}│{$2}",
+            "text": "s=$(nordvpn status); status=$(echo \"$s\" | awk 'NR==1{sub(/^Status: /, \"\"); if ($0==\"Connected\") print \"\\x1b[32m\" $0 \"\\x1b[0m\"; else print \"\\x1b[31m\" $0 \"\\x1b[0m\"}'); uptime=$(echo \"$s\" | sed -n '11s/^Uptime: //p'); echo \"$status - $uptime\"",
+            "format": "{#green}{1}"
+        },
+        {
+            "type": "command",
+            "key": "│{#green}│ \uf450  Location  │{$4}│{#keys}│{$2}",
+            "text": "s=$(nordvpn status); city=$(echo \"$s\" | sed -n '6s/^City: //p'); server=$(echo \"$s\" | sed -n '2s/^Server: //p'); echo \"$city, $server\"",
+            "format": "{#green}{1}"
+        },
+        {
+            "type": "custom",
+            "key": "│{#green}└──────────────┴{$1}┘{#keys}│",
+            "format": ""
+        },
+
+
+        {
+            "type": "custom",
+            "key": "└─────────────────{$1}┘",                // Bottom border of the entire layout
+            "format": ""
+        },
+
+        // End with line break
+        "break",                                             // Add a blank line
+    ]
+}
+
+/*
+Key Format Structure Explanation:
+
+The key format uses a combination of:
+1. Unicode box drawing characters (│ ┌ ┐ └ ┘ ┬ ┴) for borders
+2. ANSI escape codes for cursor positioning (\u001b[...)
+3. Format variables ({icon}, {sysname}, etc.)
+4. Constant references ({$1}, {$2}, etc.)
+5. Color formatting ({#color})
+
+ANSI Escape Codes Used:
+- \u001b[s      - Save cursor position (ESC[s)
+- \u001b[u      - Restore cursor position (ESC[u)
+- \u001b[nC     - Move cursor right n columns (ESC[nC)
+- \u001b[nD     - Move cursor left n columns (ESC[nD)
+
+This creates a table-like layout with fixed column widths and proper alignment,
+regardless of the actual content length in each field.
+
+For more ANSI escape code reference, see:
+https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797#cursor-controls
+*/
